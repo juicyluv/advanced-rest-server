@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/juicyluv/advanced-rest-server/internal/routes"
+	"github.com/juicyluv/advanced-rest-server/internal/handler"
 )
 
 type Server struct {
@@ -15,14 +15,18 @@ type Server struct {
 func New(cfg *config) *Server {
 	return &Server{
 		config: cfg,
-		server: &http.Server{
-			Addr:    ":" + cfg.Port,
-			Handler: routes.New().Handler(),
-		},
 	}
 }
 
 func (s *Server) Run() error {
-	log.Println("Server is running on port " + s.config.Port)
+	router := handler.NewHttpRouter()
+
+	s.server = &http.Server{
+		Addr:    ":" + s.config.Port,
+		Handler: router,
+	}
+
+	log.Println("Server is up and running on port " + s.config.Port)
+
 	return s.server.ListenAndServe()
 }

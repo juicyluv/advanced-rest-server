@@ -1,11 +1,12 @@
-package routes
+package handler
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
-func (h *handler) health(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) health(w http.ResponseWriter, r *http.Request) {
 	obj := map[string]interface{}{
 		"status":  "available",
 		"version": "1.0.0",
@@ -13,7 +14,10 @@ func (h *handler) health(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := sendJSON(w, &obj, http.StatusOK, nil); err != nil {
-
+		message := err.Error()
+		log.Println("An error occurred: " + message)
+		http.Error(w, message, http.StatusInternalServerError)
+		return
 	}
 }
 
