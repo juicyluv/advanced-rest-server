@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -33,9 +34,11 @@ func sendJSON(w http.ResponseWriter, data interface{}, statusCode int, headers h
 // readJSON decodes request body to the given destination(usually model struct)
 // and if an error occurred returns specific error message.
 func readJSON(w http.ResponseWriter, r *http.Request, dest interface{}) error {
-	// Decode request body to the destination
-	err := json.NewDecoder(r.Body).Decode(dest)
+	// Create a new decoder and check for unknown fields
+	dec := json.NewDecoder(r.Body)
+	dec.DisallowUnknownFields()
 
+	err := dec.Decode(dest)
 	if err != nil {
 		// If an error occurred, send an error mapped to JSON decoding error
 		var syntaxError *json.SyntaxError
@@ -70,10 +73,20 @@ func readJSON(w http.ResponseWriter, r *http.Request, dest interface{}) error {
 		// Empty JSON error
 		case errors.Is(err, io.EOF):
 			return errors.New("request body must not be empty")
+		// Unknown field error
+		case strings.HasPrefix(err.Error(), "json: unknown field "):
+			fieldName := strings.TrimPrefix(err.Error(), "json: unknown field ")
+			return fmt.Errorf("request body contains unknown key %s", fieldName)
+
 		// Return error as-is
 		default:
 			return err
 		}
+	}
+
+	// Decode one more time to check wheter here is another JSON object
+	if err = dec.Decode(&struct{}{}); err != nil {
+		return errors.New("request body must only contain single JSON value")
 	}
 
 	return nil
