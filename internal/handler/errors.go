@@ -42,3 +42,8 @@ func methodNotAllowedResponse(w http.ResponseWriter, r *http.Request) {
 func badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
 	errorResponse(w, r, http.StatusBadRequest, err.Error())
 }
+
+// failedValidationResponse sends a 422 UnpocessableEntity response with field errors if validation fails.
+func failedValidationResponse(w http.ResponseWriter, r *http.Request, errors map[string]string) {
+	errorResponse(w, r, http.StatusUnprocessableEntity, errors)
+}
