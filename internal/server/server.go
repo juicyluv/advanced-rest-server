@@ -7,23 +7,23 @@ import (
 	"github.com/juicyluv/advanced-rest-server/internal/handler"
 )
 
-type Server struct {
+type server struct {
 	server *http.Server
 	config *config
 }
 
-func New(cfg *config) *Server {
-	return &Server{
+func New(cfg *config) *server {
+	return &server{
 		config: cfg,
 	}
 }
 
-func (s *Server) Run() error {
-	router := handler.NewHttpRouter()
+func (s *server) Run() error {
+	router := handler.New()
 
 	s.server = &http.Server{
 		Addr:    ":" + s.config.Port,
-		Handler: router,
+		Handler: router.Router(),
 	}
 
 	log.Println("Server is up and running on port " + s.config.Port)
