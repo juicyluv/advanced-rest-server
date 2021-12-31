@@ -3,6 +3,8 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -24,6 +26,54 @@ func sendJSON(w http.ResponseWriter, data interface{}, statusCode int, headers h
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 	w.Write(obj)
+
+	return nil
+}
+
+// readJSON decodes request body to the given destination(usually model struct)
+// and if an error occurred returns specific error message.
+func readJSON(w http.ResponseWriter, r *http.Request, dest interface{}) error {
+	// Decode request body to the destination
+	err := json.NewDecoder(r.Body).Decode(dest)
+
+	if err != nil {
+		// If an error occurred, send an error mapped to JSON decoding error
+		var syntaxError *json.SyntaxError
+		var unmarshalTypeError *json.UnmarshalTypeError
+		var invalidUnmarshalError *json.InvalidUnmarshalError
+
+		switch {
+		// Syntax error
+		case errors.As(err, &syntaxError):
+			return fmt.Errorf(
+				"request body contains badly-formatted JSON (at character %d)",
+				syntaxError.Offset,
+			)
+		// Type error
+		case errors.As(err, &unmarshalTypeError):
+			// If there's an info for struct field, show what field contains an error
+			if unmarshalTypeError.Field != "" {
+				return fmt.Errorf(
+					"request body contains incorrect JSON type for field %q",
+					unmarshalTypeError.Field,
+				)
+			}
+
+			return fmt.Errorf(
+				"request body contains incorrect JSON type (at character %d)",
+				unmarshalTypeError.Offset,
+			)
+		// Unmarshall error
+		case errors.As(err, &invalidUnmarshalError):
+			panic(err)
+		// Empty JSON error
+		case errors.Is(err, io.EOF):
+			return errors.New("request body must not be empty")
+		// Return error as-is
+		default:
+			return err
+		}
+	}
 
 	return nil
 }
