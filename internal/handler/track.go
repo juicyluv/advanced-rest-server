@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"log"
 	"net/http"
 	"time"
 
@@ -9,7 +8,7 @@ import (
 )
 
 func (h *Handler) getTrack(w http.ResponseWriter, r *http.Request) {
-	id, err := readIDParam(r)
+	id, err := readIdParam(r)
 	if err != nil {
 		return
 	}
@@ -27,7 +26,6 @@ func (h *Handler) getTrack(w http.ResponseWriter, r *http.Request) {
 
 	err = sendJSON(w, track, http.StatusOK, nil)
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "Error from sending json", http.StatusInternalServerError)
+		internalErrorResponse(w, r, err)
 	}
 }
