@@ -65,6 +65,7 @@ func readJSON(w http.ResponseWriter, r *http.Request, dest interface{}) error {
 			)
 		// Unmarshall error
 		case errors.As(err, &invalidUnmarshalError):
+			// We are panicing here because this is unexpected error
 			panic(err)
 		// Empty JSON error
 		case errors.Is(err, io.EOF):
