@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"net/http"
-
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -28,14 +26,4 @@ func New() *Handler {
 // Router returns handler's router.
 func (h *Handler) Router() *httprouter.Router {
 	return h.router
-}
-
-// initRoutes initializes handlers for API routes.
-func initRoutes(h *Handler) {
-	h.router.NotFound = http.HandlerFunc(notFoundResponse)
-	h.router.MethodNotAllowed = http.HandlerFunc(methodNotAllowedResponse)
-
-	h.router.HandlerFunc(http.MethodGet, "/api/v1/health", h.health)
-	h.router.HandlerFunc(http.MethodGet, "/api/v1/tracks/:id", h.getTrack)
-
 }
