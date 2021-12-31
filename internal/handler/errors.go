@@ -5,12 +5,9 @@ import (
 	"net/http"
 )
 
-// errorMessage is used to send an error message in JSON format.
-type errorMessage map[string]interface{}
-
 // errorResponse logs an error and sends a JSON response with a given status code.
 func errorResponse(w http.ResponseWriter, r *http.Request, statusCode int, message interface{}) {
-	msg := errorMessage{"error": message}
+	msg := jsonResponse{"error": message}
 
 	if err := sendJSON(w, msg, statusCode, nil); err != nil {
 		logError(r, err)
