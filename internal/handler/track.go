@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -28,4 +29,17 @@ func (h *Handler) getTrack(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		internalErrorResponse(w, r, err)
 	}
+}
+
+func (h *Handler) createTrack(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Title string `json:"title"`
+	}
+
+	if err := readJSON(w, r, &input); err != nil {
+		badRequestResponse(w, r, err)
+		return
+	}
+
+	log.Println(input)
 }
