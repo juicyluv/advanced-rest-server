@@ -26,7 +26,7 @@ func (s *server) Run() error {
 		Handler: router.Router(),
 	}
 
-	log.Println("Server is up and running on port " + s.config.Port)
+	log.Println("Serverw is up and running on port " + s.config.Port)
 
 	return s.server.ListenAndServe()
 }
