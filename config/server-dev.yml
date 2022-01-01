@@ -1,0 +1,14 @@
+http:
+  port: 2022
+  readTimeout: 10   # Seconds
+  writeTimeout: 10  # Seconds
+  maxHeaderBytes: 1 # MegaBytes
+
+db:
+  postgres:
+      username: "audiosystem"
+      dbname: "audiosystem-test"
+      port: 5432
+      host: "localhost"
+      sslmode: "disable"
+    
