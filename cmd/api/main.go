@@ -5,7 +5,10 @@ import (
 	"log"
 
 	"github.com/juicyluv/advanced-rest-server/config"
+	"github.com/juicyluv/advanced-rest-server/internal/logger"
 	"github.com/juicyluv/advanced-rest-server/internal/server"
+
+	_ "github.com/lib/pq"
 )
 
 var (
@@ -20,8 +23,10 @@ func main() {
 		log.Fatalln("An error occurred while loading config file. Please, check config path and filename.")
 	}
 
+	logger := logger.New(logger.LevelDebug)
+
 	config := server.NewConfig()
-	server := server.New(config)
+	server := server.New(config, logger)
 
 	if err := server.Run(); err != nil {
 		log.Fatal(err)
