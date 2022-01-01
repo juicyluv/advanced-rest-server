@@ -1,5 +1,14 @@
 package validator
 
+import (
+	"fmt"
+	"regexp"
+)
+
+var (
+	emailRegexp = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+)
+
 // Validator is used to validate fields of a given struct.
 // It contains a map of fields and its error messages.
 type Validator struct {
@@ -32,6 +41,11 @@ func (v *Validator) Check(condition bool, field, errorMessage string) {
 	}
 }
 
+// IsEmail return true if a given string is email.
+func IsEmail(value string) bool {
+	return emailRegexp.MatchString(value)
+}
+
 // UniqueStrings checks whether given string slice contains only unique values.
 // Returns true on success.
 func (v *Validator) UniqueStrings(values []string) bool {
@@ -42,4 +56,27 @@ func (v *Validator) UniqueStrings(values []string) bool {
 	}
 
 	return len(values) == len(unique)
+}
+
+// MinLength checks whether given string has provided length.
+func (v *Validator) MinLength(value string, length int, field string) {
+	message := fmt.Sprintf("the length must be greater than %d characters", length+1)
+	v.Check(len(value) >= length, field, message)
+}
+
+// MaxLength checks whether given string has provided length.
+func (v *Validator) MaxLength(value string, length int, field string) {
+	message := fmt.Sprintf("the length must be not greater than %d characters", length)
+	v.Check(len(value) <= length, field, message)
+}
+
+// LengthBetween checks whether given string has length between provided numbers.
+func (v *Validator) LengthBetween(value string, min, max int, field string) {
+	v.MinLength(value, min, field)
+	v.MaxLength(value, max, field)
+}
+
+// Required checks whether given value is empty
+func (v *Validator) NotEmpty(value string, field string) {
+	v.Check(value != "", field, "must be provided")
 }
