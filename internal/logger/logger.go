@@ -5,8 +5,10 @@ import (
 	"log"
 )
 
+type LogLevel int
+
 const (
-	LevelDebug int = iota
+	LevelDebug LogLevel = iota
 	LevelInfo
 	LevelError
 	LevelFatal
@@ -14,47 +16,44 @@ const (
 
 type Logger struct {
 	logger *log.Logger
-	level  int
+	level  LogLevel
 }
 
 type Logging interface {
-	Print(args ...interface{})
+	Println(args ...interface{})
 	Printf(format string, args ...interface{})
 }
 
-func New(level int) *Logger {
+func New(level LogLevel) *Logger {
 	return &Logger{
 		logger: log.Default(),
 		level:  level,
 	}
 }
 
-func (l *Logger) Log(args ...interface{}) {
+func (l *Logger) Println(args ...interface{}) {
 	l.print(args...)
 }
 
-func (l *Logger) Logf(format string, args ...interface{}) {
-	l.printf(format, args...)
+func (l *Logger) Printf(format string, args ...interface{}) {
+	l.print(fmt.Sprintf(format, args...))
 }
 
 func (l *Logger) Debug(msg string) {
 	if l.level >= LevelDebug {
-		l.logger.SetPrefix("[DEBUG]: ")
-		l.logger.Println(msg)
+		l.logger.Println("[DEBUG]: " + msg)
 	}
 }
 
 func (l *Logger) Info(msg string) {
 	if l.level >= LevelInfo {
-		l.logger.SetPrefix("[INFO]: ")
-		l.logger.Println(msg)
+		l.logger.Println("[INFO]: " + msg)
 	}
 }
 
 func (l *Logger) Error(msg string) {
 	if l.level >= LevelError {
-		l.logger.SetPrefix("[ERROR]: ")
-		l.logger.Println(msg)
+		l.logger.Println("[ERROR]: " + msg)
 	}
 }
 
@@ -62,7 +61,7 @@ func (l *Logger) Fatal(msg string) {
 	l.logger.Fatal(msg)
 }
 
-func (l *Logger) Level() int {
+func (l *Logger) Level() LogLevel {
 	return l.level
 }
 
@@ -81,11 +80,6 @@ func (l *Logger) print(args ...interface{}) {
 		prefix = "FATAL"
 	}
 
-	l.logger.SetPrefix(fmt.Sprintf("[%s]: ", prefix))
-	l.logger.Println(args...)
-}
-
-func (l *Logger) printf(format string, args ...interface{}) {
-	s := fmt.Sprintf(format, args...)
-	l.print(s)
+	message := fmt.Sprintf("[%s]: ", prefix) + fmt.Sprint(args...)
+	l.logger.Println(message)
 }
