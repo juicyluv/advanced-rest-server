@@ -5,8 +5,9 @@ import (
 	"regexp"
 )
 
+// Email RegEx
 var (
-	emailRegexp = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+	emailRegEx = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 )
 
 // Validator is used to validate fields of a given struct.
@@ -43,7 +44,7 @@ func (v *Validator) Check(condition bool, field, errorMessage string) {
 
 // IsEmail return true if a given string is email.
 func IsEmail(value string) bool {
-	return emailRegexp.MatchString(value)
+	return emailRegEx.MatchString(value)
 }
 
 // UniqueStrings checks whether given string slice contains only unique values.
