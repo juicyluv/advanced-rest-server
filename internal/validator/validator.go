@@ -80,3 +80,15 @@ func (v *Validator) LengthBetween(value string, min, max int, field string) {
 func (v *Validator) NotEmpty(value string, field string) {
 	v.Check(value != "", field, "must be provided")
 }
+
+// Min checks whether given value is greater or equal to provided value.
+func (v *Validator) Min(value int, min int, field string) {
+	message := fmt.Sprintf("must be greater or equal to %d", min)
+	v.Check(value >= min, field, message)
+}
+
+// Max checks whether given value is less or equal to provided value.
+func (v *Validator) Max(value int, max int, field string) {
+	message := fmt.Sprintf("must be less or equal to %d", max)
+	v.Check(value <= max, field, message)
+}
