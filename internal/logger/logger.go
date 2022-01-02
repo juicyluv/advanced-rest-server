@@ -8,10 +8,10 @@ import (
 type LogLevel int
 
 const (
-	LevelDebug LogLevel = iota
-	LevelInfo
+	LevelFatal LogLevel = iota
 	LevelError
-	LevelFatal
+	LevelInfo
+	LevelDebug
 )
 
 type Logger struct {
