@@ -9,11 +9,11 @@ import (
 
 type server struct {
 	server *http.Server
-	config *config
+	config *Config
 	logger logger.Logging
 }
 
-func New(cfg *config, logger logger.Logging) *server {
+func New(cfg *Config, logger logger.Logging) *server {
 	return &server{
 		config: cfg,
 		logger: logger,
