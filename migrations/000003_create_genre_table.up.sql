@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS genre(
+    genre_id SMALLSERIAL PRIMARY KEY,
+    genre TEXT NOT NULL
+);
