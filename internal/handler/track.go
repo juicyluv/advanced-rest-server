@@ -1,9 +1,7 @@
 package handler
 
 import (
-	"log"
 	"net/http"
-	"time"
 
 	"github.com/juicyluv/advanced-rest-server/internal/model"
 	"github.com/juicyluv/advanced-rest-server/internal/validator"
@@ -16,14 +14,12 @@ func (h *Handler) getTrack(w http.ResponseWriter, r *http.Request) {
 	}
 
 	track := &model.Track{
-		Id:        id,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-		Title:     "Casual Title",
-		Year:      2002,
-		Duration:  201,
-		Genres:    []string{"This", "And", "This"},
-		Artists:   []string{"Yeah", "Boi"},
+		Id:       id,
+		Title:    "Casual Title",
+		Year:     2002,
+		Duration: 201,
+		Genres:   []string{"This", "And", "This"},
+		Artists:  []string{"Yeah", "Boi"},
 	}
 
 	err = sendJSON(w, track, http.StatusOK, nil)
@@ -33,10 +29,7 @@ func (h *Handler) getTrack(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) createTrack(w http.ResponseWriter, r *http.Request) {
-	var input struct {
-		Title string `json:"title"`
-		Year  int32  `json:"year"`
-	}
+	input := &model.Track{}
 
 	if err := readJSON(w, r, &input); err != nil {
 		badRequestResponse(w, r, err)
@@ -45,18 +38,19 @@ func (h *Handler) createTrack(w http.ResponseWriter, r *http.Request) {
 
 	v := validator.New()
 
-	v.Check(input.Title != "", "title", "must not be empty")
-	v.Check(len(input.Title) >= 1, "title", "the length must be at least 1 character")
-	v.Check(len(input.Title) <= 50, "title", "the length must be not greater than 50 characters")
-
-	v.Check(input.Year != 0, "year", "must be provided")
-	v.Check(input.Year > 1888, "year", "must be greater than 1888")
-	v.Check(input.Year <= int32(time.Now().Year()), "year", "must be not greater than current year")
+	input.Validate(v)
 
 	if !v.Valid() {
 		failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
-	log.Println(input)
+	if err := h.service.Track.Create(input); err != nil {
+		internalErrorResponse(w, r, err)
+		return
+	}
+
+	if err := sendJSON(w, input, http.StatusOK, nil); err != nil {
+		internalErrorResponse(w, r, err)
+	}
 }
