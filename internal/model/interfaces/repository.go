@@ -9,3 +9,11 @@ type TrackRepository interface {
 	Update(track *model.Track) error
 	Delete(id int64) error
 }
+
+type GenreRepository interface {
+	Insert(genre *model.Genre) error
+	FindAll() ([]model.Genre, error)
+	FindById(id int64) (*model.Genre, error)
+	Update(track *model.Genre) error
+	Delete(id int64) error
+}
