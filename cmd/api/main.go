@@ -28,7 +28,6 @@ func main() {
 
 	logger := logger.New(logger.LevelDebug)
 	config := server.NewConfig()
-	server := server.New(config, logger)
 
 	db, err := openDB(config)
 	if err != nil {
@@ -36,6 +35,8 @@ func main() {
 	}
 	defer db.Close()
 	logger.Info("Connected to database '" + config.Db.DbName + "'.")
+
+	server := server.New(config, logger, db)
 
 	if err := server.Run(); err != nil {
 		log.Fatal(err)
