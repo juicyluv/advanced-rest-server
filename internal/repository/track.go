@@ -15,8 +15,10 @@ func NewTrackRepository(db *sqlx.DB) *TrackRepository {
 	}
 }
 
-func (r *TrackRepository) Insert(track *model.Track) error {
-	return nil
+func (r *TrackRepository) Insert(t *model.Track) error {
+	query := `INSERT INTO track (title, year, duration) VALUES ($1, $2, $3)`
+	_, err := r.db.Exec(query, t.Title, t.Year, t.Duration)
+	return err
 }
 
 func (r *TrackRepository) FindAll() ([]model.Track, error) {
