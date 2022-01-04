@@ -36,3 +36,21 @@ func (r *GenreRepository) Update(genre *model.Genre) error {
 func (r *GenreRepository) Delete(id int64) error {
 	return nil
 }
+
+func (r *GenreRepository) GetTrackGenres(trackId int64) ([]model.Genre, error) {
+	genres := []model.Genre{}
+
+	query := `
+	SELECT g.genre_id, g.genre 
+	FROM track_genre tr 
+	INNER JOIN genre g 
+	ON  g.genre_id = tr.genre_id
+	WHERE track_id=$1`
+
+	err := r.db.Select(&genres, query, trackId)
+	if err != nil {
+		return nil, err
+	}
+
+	return genres, nil
+}
