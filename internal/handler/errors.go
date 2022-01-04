@@ -3,6 +3,8 @@ package handler
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/juicyluv/advanced-rest-server/internal/validator"
 )
 
 // errorResponse logs an error and sends a JSON response with a given status code.
@@ -44,6 +46,6 @@ func badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
 }
 
 // failedValidationResponse sends a 422 UnpocessableEntity response with field errors if validation fails.
-func failedValidationResponse(w http.ResponseWriter, r *http.Request, errors map[string]string) {
+func failedValidationResponse(w http.ResponseWriter, r *http.Request, errors validator.ValidatorErrors) {
 	errorResponse(w, r, http.StatusUnprocessableEntity, errors)
 }
