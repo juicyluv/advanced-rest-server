@@ -6,30 +6,61 @@ import (
 )
 
 type TrackService struct {
-	repository interfaces.TrackRepository
+	repository   interfaces.TrackRepository
+	genreService interfaces.GenreService
 }
 
-func NewTrackService(repository interfaces.TrackRepository) *TrackService {
+func NewTrackService(repository interfaces.TrackRepository, gs interfaces.GenreService) *TrackService {
 	return &TrackService{
-		repository: repository,
+		repository:   repository,
+		genreService: gs,
 	}
 }
 
 func (s *TrackService) Create(track *model.Track) error {
-	return s.repository.Insert(track)
+	err := s.repository.Insert(track)
+	if err != nil {
+		return err
+	}
+
+	genres, err := s.genreService.GetTrackGenres(track.Id)
+	if err != nil {
+		return err
+	}
+
+	track.Genres = genres
+
+	return nil
 }
 func (s *TrackService) GetAll() ([]model.Track, error) {
 	return nil, nil
 }
 
 func (s *TrackService) GetById(id int64) (*model.Track, error) {
-	return nil, nil
+	return s.repository.FindById(id)
 }
 
 func (s *TrackService) Update(track *model.Track) error {
+	err := s.repository.Update(track)
+	if err != nil {
+		return err
+	}
+
+	genres, err := s.genreService.GetTrackGenres(track.Id)
+	if err != nil {
+		return err
+	}
+
+	track.Genres = genres
+
 	return nil
 }
 
-func (s *TrackService) Delete(id int64) error {
-	return nil
+func (s *TrackService) Delete(trackId int64) error {
+	_, err := s.GetById(trackId)
+	if err != nil {
+		return err
+	}
+
+	return s.repository.Delete(trackId)
 }
