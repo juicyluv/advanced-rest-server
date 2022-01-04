@@ -10,16 +10,18 @@ var (
 	emailRegEx = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 )
 
+type ValidatorErrors map[string]interface{}
+
 // Validator is used to validate fields of a given struct.
 // It contains a map of fields and its error messages.
 type Validator struct {
-	Errors map[string]string
+	Errors ValidatorErrors
 }
 
 // New returns a new Validator instance.
 func New() *Validator {
 	return &Validator{
-		Errors: make(map[string]string),
+		Errors: make(map[string]interface{}),
 	}
 }
 
