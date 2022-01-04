@@ -16,4 +16,5 @@ type GenreRepository interface {
 	FindById(id int64) (*model.Genre, error)
 	Update(track *model.Genre) error
 	Delete(id int64) error
+	GetTrackGenres(trackId int64) ([]model.Genre, error)
 }

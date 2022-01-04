@@ -16,4 +16,5 @@ type GenreService interface {
 	GetById(id int64) (*model.Genre, error)
 	Update(g *model.Genre) error
 	Delete(id int64) error
+	GetTrackGenres(trackId int64) ([]model.Genre, error)
 }
