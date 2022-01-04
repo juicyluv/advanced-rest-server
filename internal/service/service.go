@@ -7,13 +7,16 @@ import (
 
 type Service struct {
 	Track interfaces.TrackService
+	Genre interfaces.GenreService
 
 	repository *repository.Repository
 }
 
 func NewService(repository *repository.Repository) *Service {
+	genreService := NewGenreService(repository.Genre)
 	return &Service{
 		repository: repository,
-		Track:      NewTrackService(repository.Track),
+		Genre:      genreService,
+		Track:      NewTrackService(repository.Track, genreService),
 	}
 }
