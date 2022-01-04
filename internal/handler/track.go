@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/juicyluv/advanced-rest-server/internal/model"
@@ -13,13 +14,10 @@ func (h *Handler) getTrack(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	track := &model.Track{
-		Id:       id,
-		Title:    "Casual Title",
-		Year:     2002,
-		Duration: 201,
-		Genres:   []string{"This", "And", "This"},
-		Artists:  []string{"Yeah", "Boi"},
+	track, err := h.service.Track.GetById(id)
+	if err != nil {
+		internalErrorResponse(w, r, err)
+		return
 	}
 
 	err = sendJSON(w, track, http.StatusOK, nil)
@@ -49,6 +47,16 @@ func (h *Handler) createTrack(w http.ResponseWriter, r *http.Request) {
 		internalErrorResponse(w, r, err)
 		return
 	}
+
+	genres, err := h.service.Genre.GetTrackGenres(input.Id)
+	if err != nil {
+		internalErrorResponse(w, r, err)
+		return
+	}
+
+	input.Genres = genres
+
+	fmt.Printf("%v", input)
 
 	if err := sendJSON(w, input, http.StatusOK, nil); err != nil {
 		internalErrorResponse(w, r, err)
