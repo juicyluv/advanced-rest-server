@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/juicyluv/advanced-rest-server/internal/model"
@@ -35,7 +34,6 @@ func (h *Handler) createTrack(w http.ResponseWriter, r *http.Request) {
 	}
 
 	v := validator.New()
-
 	input.Validate(v)
 
 	if !v.Valid() {
@@ -48,17 +46,63 @@ func (h *Handler) createTrack(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	genres, err := h.service.Genre.GetTrackGenres(input.Id)
+	if err := sendJSON(w, input, http.StatusOK, nil); err != nil {
+		internalErrorResponse(w, r, err)
+	}
+}
+
+func (h *Handler) updateTrack(w http.ResponseWriter, r *http.Request) {
+	id, err := readIdParam(r)
+	if err != nil {
+		return
+	}
+
+	track, err := h.service.Track.GetById(id)
 	if err != nil {
 		internalErrorResponse(w, r, err)
 		return
 	}
 
-	input.Genres = genres
+	var input model.UpdateTrack
+	err = readJSON(w, r, &input)
+	if err != nil {
+		badRequestResponse(w, r, err)
+		return
+	}
 
-	fmt.Printf("%v", input)
+	input.Copy(track)
+	v := validator.New()
+	track.Validate(v)
 
-	if err := sendJSON(w, input, http.StatusOK, nil); err != nil {
+	if !v.Valid() {
+		failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	err = h.service.Track.Update(track)
+	if err != nil {
+		internalErrorResponse(w, r, err)
+		return
+	}
+
+	err = sendJSON(w, track, http.StatusOK, nil)
+	if err != nil {
+		internalErrorResponse(w, r, err)
+	}
+}
+
+func (h *Handler) deleteTrack(w http.ResponseWriter, r *http.Request) {
+	id, err := readIdParam(r)
+	if err != nil {
+		return
+	}
+
+	if err := h.service.Track.Delete(id); err != nil {
+		internalErrorResponse(w, r, err)
+		return
+	}
+
+	if err := sendJSON(w, jsonResponse{"message": "record has been deleted"}, http.StatusOK, nil); err != nil {
 		internalErrorResponse(w, r, err)
 	}
 }
