@@ -7,13 +7,20 @@ import (
 )
 
 type Track struct {
-	Id       int64    `json:"id"`
-	Title    string   `json:"title"`
-	Year     int32    `json:"year,omitempty"`
-	Duration int32    `json:"duration"`
-	Genres   []string `json:"genres,omitempty"`
-	Artists  []string `json:"artists"`
-	Album    string   `json:"album,omitempty"`
+	Id       int64   `json:"id" db:"track_id"`
+	Title    string  `json:"title"`
+	Year     int32   `json:"year"`
+	Duration int32   `json:"duration"`
+	Genres   []Genre `json:"genres"`
+	Artists  []int   `json:"artists"`
+	TrackURL string  `json:"trackUrl" db:"track_url"`
+}
+
+type UpdateTrack struct {
+	Title    *string `json:"title"`
+	Year     *int32  `json:"year"`
+	Genres   []Genre `json:"genres"`
+	TrackURL *string `json:"trackUrl"`
 }
 
 // Validate checks whether track instance is valid. If it's not, it
@@ -29,11 +36,22 @@ func (t *Track) Validate(v *validator.Validator) {
 
 	// Duration
 	v.Min(int(t.Duration), 1, "duration")
+}
 
-	// Genres, Artists
-	v.UniqueStrings(t.Genres)
-	v.UniqueStrings(t.Artists)
+func (t *UpdateTrack) Copy(track *Track) {
+	if t.Title != nil {
+		track.Title = *t.Title
+	}
 
-	// Album
-	v.NotEmpty(t.Album, "album")
+	if t.Year != nil {
+		track.Year = *t.Year
+	}
+
+	if t.Genres != nil {
+		track.Genres = t.Genres
+	}
+
+	if t.TrackURL != nil {
+		track.TrackURL = *t.TrackURL
+	}
 }
