@@ -33,3 +33,7 @@ func (s *GenreService) Update(track *model.Genre) error {
 func (s *GenreService) Delete(id int64) error {
 	return nil
 }
+
+func (s *GenreService) GetTrackGenres(trackId int64) ([]model.Genre, error) {
+	return s.repository.GetTrackGenres(trackId)
+}
