@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -105,4 +106,40 @@ func readIdParam(r *http.Request) (int64, error) {
 // logError logs an error to logger output.
 func logError(r *http.Request, err error) {
 	log.Println(err)
+}
+
+func (h *Handler) readString(qs url.Values, key string, defaultValue string) string {
+	s := qs.Get(key)
+
+	// If no key exists (or the value is empty) then return the default value.
+	if s == "" {
+		return defaultValue
+	}
+
+	return s
+}
+
+func (h *Handler) readCSV(qs url.Values, key string, defaultValue []string) []string {
+	csv := qs.Get(key)
+
+	if csv == "" {
+		return defaultValue
+	}
+
+	return strings.Split(csv, ",")
+}
+
+func (h *Handler) readInt(qs url.Values, key string, defaultValue int) int {
+	s := qs.Get(key)
+
+	if s == "" {
+		return defaultValue
+	}
+
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		return defaultValue
+	}
+
+	return i
 }
