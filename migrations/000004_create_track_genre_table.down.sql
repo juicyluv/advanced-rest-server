@@ -1,1 +1,1 @@
-DROP TABLE track_genre;
+DROP TABLE IF EXISTS track_genre;
