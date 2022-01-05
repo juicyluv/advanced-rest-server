@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
@@ -34,18 +36,7 @@ func (r *TrackRepository) Insert(t *model.Track) error {
 		return err
 	}
 
-	query = "INSERT INTO track_genre(track_id, genre_id) VALUES"
-	genresLen := len(t.Genres)
-	args := make([]interface{}, genresLen)
-	valuesStr := " (%d, $%d),"
-	for i, v := range t.Genres {
-		if i == genresLen-1 {
-			valuesStr = " (%d, $%d)"
-		}
-		query += fmt.Sprintf(valuesStr, t.Id, i+1)
-		args[i] = v.Id
-	}
-
+	query, args := insertTrackGenresQuery(t.Genres, t.Id)
 	_, err = tx.Exec(query, args...)
 	if err != nil {
 		tx.Rollback()
@@ -95,13 +86,25 @@ func (r *TrackRepository) Update(track *model.Track) error {
 
 	query := `
 	UPDATE track 
-	SET title = $1, year = $2, duration = $3, track_url = $4
-	WHERE track_id = $5`
-	args := []interface{}{track.Title, track.Year, track.Duration, track.TrackURL, track.Id}
-	_, err = tx.Exec(query, args...)
+	SET title = $1, year = $2, duration = $3, track_url = $4, version = version + 1
+	WHERE track_id = $5 AND version = $6
+	RETURNING version`
+	args := []interface{}{
+		track.Title,
+		track.Year,
+		track.Duration,
+		track.TrackURL,
+		track.Id,
+		track.Version}
+	err = tx.QueryRow(query, args...).Scan(&track.Version)
 	if err != nil {
 		tx.Rollback()
-		return err
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrEditConflict
+		default:
+			return err
+		}
 	}
 
 	// Update track genres
@@ -112,17 +115,7 @@ func (r *TrackRepository) Update(track *model.Track) error {
 		return err
 	}
 
-	query = "INSERT INTO track_genre(track_id, genre_id) VALUES"
-	genresLen := len(track.Genres)
-	args = make([]interface{}, genresLen)
-	valuesStr := " (%d, $%d),"
-	for i, v := range track.Genres {
-		if i == genresLen-1 {
-			valuesStr = " (%d, $%d)"
-		}
-		query += fmt.Sprintf(valuesStr, track.Id, i+1)
-		args[i] = v.Id
-	}
+	query, args = insertTrackGenresQuery(track.Genres, track.Id)
 
 	_, err = tx.Exec(query, args...)
 	if err != nil {
@@ -137,4 +130,20 @@ func (r *TrackRepository) Delete(trackId int64) error {
 	query := `DELETE FROM track WHERE track_id = $1`
 	_, err := r.db.Exec(query, trackId)
 	return err
+}
+
+func insertTrackGenresQuery(genres []model.Genre, trackId int64) (string, []interface{}) {
+	query := "INSERT INTO track_genre(track_id, genre_id) VALUES"
+	genresLen := len(genres)
+	args := make([]interface{}, genresLen)
+	valuesStr := " (%d, $%d),"
+	for i, v := range genres {
+		if i == genresLen-1 {
+			valuesStr = " (%d, $%d)"
+		}
+		query += fmt.Sprintf(valuesStr, trackId, i+1)
+		args[i] = v.Id
+	}
+
+	return query, args
 }
