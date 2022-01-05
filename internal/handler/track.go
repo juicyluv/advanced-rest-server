@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/juicyluv/advanced-rest-server/internal/model"
+	"github.com/juicyluv/advanced-rest-server/internal/repository"
 	"github.com/juicyluv/advanced-rest-server/internal/validator"
 )
 
@@ -15,7 +17,12 @@ func (h *Handler) getTrack(w http.ResponseWriter, r *http.Request) {
 
 	track, err := h.service.Track.GetById(id)
 	if err != nil {
-		internalErrorResponse(w, r, err)
+		switch {
+		case errors.Is(err, errNoRows):
+			badRequestResponse(w, r, errNoRowsResponse)
+		default:
+			internalErrorResponse(w, r, err)
+		}
 		return
 	}
 
@@ -59,7 +66,14 @@ func (h *Handler) updateTrack(w http.ResponseWriter, r *http.Request) {
 
 	track, err := h.service.Track.GetById(id)
 	if err != nil {
-		internalErrorResponse(w, r, err)
+		switch {
+		case errors.Is(err, errNoRows):
+			badRequestResponse(w, r, errNoRowsResponse)
+		case errors.Is(err, repository.ErrEditConflict):
+			editConflictResponse(w, r)
+		default:
+			internalErrorResponse(w, r, err)
+		}
 		return
 	}
 
@@ -98,7 +112,12 @@ func (h *Handler) deleteTrack(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.Track.Delete(id); err != nil {
-		internalErrorResponse(w, r, err)
+		switch {
+		case errors.Is(err, errNoRows):
+			badRequestResponse(w, r, errNoRowsResponse)
+		default:
+			internalErrorResponse(w, r, err)
+		}
 		return
 	}
 
