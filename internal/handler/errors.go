@@ -1,10 +1,17 @@
 package handler
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/juicyluv/advanced-rest-server/internal/validator"
+)
+
+var (
+	errNoRows         = sql.ErrNoRows
+	errNoRowsResponse = errors.New("no record found")
 )
 
 // errorResponse logs an error and sends a JSON response with a given status code.
@@ -48,4 +55,10 @@ func badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
 // failedValidationResponse sends a 422 UnpocessableEntity response with field errors if validation fails.
 func failedValidationResponse(w http.ResponseWriter, r *http.Request, errors validator.ValidatorErrors) {
 	errorResponse(w, r, http.StatusUnprocessableEntity, errors)
+}
+
+// editConflictResponse sends a 409 Conflict response when the data race event occurred.
+func editConflictResponse(w http.ResponseWriter, r *http.Request) {
+	message := "unable to update the record due to an edit conflict, please try again"
+	errorResponse(w, r, http.StatusConflict, message)
 }
