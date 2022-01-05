@@ -14,6 +14,7 @@ type Track struct {
 	Genres   []Genre `json:"genres"`
 	Artists  []int   `json:"artists"`
 	TrackURL string  `json:"trackUrl" db:"track_url"`
+	Version  int     `json:"version"`
 }
 
 type UpdateTrack struct {
@@ -36,6 +37,9 @@ func (t *Track) Validate(v *validator.Validator) {
 
 	// Duration
 	v.Min(int(t.Duration), 1, "duration")
+
+	// Genres
+	v.Check(len(t.Genres) != 0, "genres", "must be provided")
 }
 
 func (t *UpdateTrack) Copy(track *Track) {
