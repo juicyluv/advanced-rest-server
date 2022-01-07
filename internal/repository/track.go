@@ -1,12 +1,18 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/juicyluv/advanced-rest-server/internal/model"
+)
+
+var (
+	queryTimeout = 3 * time.Second
 )
 
 type TrackRepository struct {
@@ -60,7 +66,10 @@ func (r *TrackRepository) FindById(trackId int64) (*model.Track, error) {
 	ON g.genre_id = tg.genre_id 
 	WHERE track_id = $1`
 
-	err := r.db.Select(&genres, query, trackId)
+	ctxGenres, cancelGenres := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancelGenres()
+
+	err := r.db.SelectContext(ctxGenres, &genres, query, trackId)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +77,10 @@ func (r *TrackRepository) FindById(trackId int64) (*model.Track, error) {
 	var track model.Track
 	query = `SELECT * FROM track WHERE track_id = $1`
 
-	err = r.db.Get(&track, query, trackId)
+	ctxTrack, cancelTrack := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancelTrack()
+
+	err = r.db.GetContext(ctxTrack, &track, query, trackId)
 	if err != nil {
 		return nil, err
 	}
@@ -95,8 +107,13 @@ func (r *TrackRepository) Update(track *model.Track) error {
 		track.Duration,
 		track.TrackURL,
 		track.Id,
-		track.Version}
-	err = tx.QueryRow(query, args...).Scan(&track.Version)
+		track.Version,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	err = tx.QueryRowContext(ctx, query, args...).Scan(&track.Version)
 	if err != nil {
 		tx.Rollback()
 		switch {
@@ -109,7 +126,11 @@ func (r *TrackRepository) Update(track *model.Track) error {
 
 	// Update track genres
 	query = `DELETE FROM track_genre WHERE track_id = $1`
-	_, err = tx.Exec(query, track.Id)
+
+	ctxDelete, cancelDelete := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancelDelete()
+
+	_, err = tx.ExecContext(ctxDelete, query, track.Id)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -117,7 +138,10 @@ func (r *TrackRepository) Update(track *model.Track) error {
 
 	query, args = insertTrackGenresQuery(track.Genres, track.Id)
 
-	_, err = tx.Exec(query, args...)
+	ctxInsert, cancelInsert := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancelInsert()
+
+	_, err = tx.ExecContext(ctxInsert, query, args...)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -128,7 +152,9 @@ func (r *TrackRepository) Update(track *model.Track) error {
 
 func (r *TrackRepository) Delete(trackId int64) error {
 	query := `DELETE FROM track WHERE track_id = $1`
-	_, err := r.db.Exec(query, trackId)
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+	_, err := r.db.ExecContext(ctx, query, trackId)
 	return err
 }
 
