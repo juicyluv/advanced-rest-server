@@ -108,7 +108,7 @@ func logError(r *http.Request, err error) {
 	log.Println(err)
 }
 
-func (h *Handler) readString(qs url.Values, key string, defaultValue string) string {
+func (h *Handler) readQueryString(qs url.Values, key string, defaultValue string) string {
 	s := qs.Get(key)
 
 	// If no key exists (or the value is empty) then return the default value.
@@ -119,7 +119,7 @@ func (h *Handler) readString(qs url.Values, key string, defaultValue string) str
 	return s
 }
 
-func (h *Handler) readCSV(qs url.Values, key string, defaultValue []string) []string {
+func (h *Handler) readQueryCSV(qs url.Values, key string, defaultValue []string) []string {
 	csv := qs.Get(key)
 
 	if csv == "" {
@@ -129,7 +129,7 @@ func (h *Handler) readCSV(qs url.Values, key string, defaultValue []string) []st
 	return strings.Split(csv, ",")
 }
 
-func (h *Handler) readInt(qs url.Values, key string, defaultValue int) int {
+func (h *Handler) readQueryInt(qs url.Values, key string, defaultValue int) int {
 	s := qs.Get(key)
 
 	if s == "" {

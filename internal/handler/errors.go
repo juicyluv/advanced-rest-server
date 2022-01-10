@@ -11,7 +11,7 @@ import (
 
 var (
 	errNoRows         = sql.ErrNoRows
-	errNoRowsResponse = errors.New("no record found")
+	errNoRowsResponse = errors.New("record not found")
 )
 
 // errorResponse logs an error and sends a JSON response with a given status code.
