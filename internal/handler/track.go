@@ -32,6 +32,38 @@ func (h *Handler) getTrack(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (h *Handler) getListOfTracks(w http.ResponseWriter, r *http.Request) {
+	query := &model.TrackFilter{}
+
+	v := validator.New()
+
+	qs := r.URL.Query()
+
+	query.Title = h.readQueryString(qs, "title", "")
+	query.Genres = h.readQueryCSV(qs, "genres", []string{})
+	query.Year = h.readQueryInt(qs, "year", 0, v)
+	query.Duration = h.readQueryInt(qs, "duration", 0, v)
+	query.Filters.Page = h.readQueryInt(qs, "page", 1, v)
+	query.Filters.PageSize = h.readQueryInt(qs, "page_size", 20, v)
+	query.Filters.Sort = h.readQueryString(qs, "sort", "id")
+	query.Filters.SortSafeList = []string{"id", "title", "year", "duration", "genre"}
+
+	if query.Filters.Validate(v); !v.Valid() {
+		failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	tracks, err := h.service.Track.GetAll(query)
+	if err != nil {
+		internalErrorResponse(w, r, err)
+		return
+	}
+
+	if err := sendJSON(w, tracks, http.StatusOK, nil); err != nil {
+		internalErrorResponse(w, r, err)
+	}
+}
+
 func (h *Handler) createTrack(w http.ResponseWriter, r *http.Request) {
 	input := &model.Track{}
 
