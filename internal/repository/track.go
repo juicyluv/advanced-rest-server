@@ -52,8 +52,34 @@ func (r *TrackRepository) Insert(t *model.Track) error {
 	return tx.Commit()
 }
 
-func (r *TrackRepository) FindAll() ([]model.Track, error) {
-	return nil, nil
+func (r *TrackRepository) FindAll(filters *model.TrackFilter) ([]model.Track, error) {
+	var tracks []model.Track
+
+	query := `SELECT track_id, title, year, duration, track_url FROM track`
+
+	err := r.db.Select(&tracks, query)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range tracks {
+		genres := []model.Genre{}
+		query = `
+		SELECT g.* 
+		FROM track_genre tg 
+		JOIN genre g
+		ON tg.genre_id = g.genre_id
+		WHERE tg.track_id = $1`
+
+		err = r.db.Select(&genres, query, tracks[i].Id)
+		if err != nil {
+			return nil, err
+		}
+
+		tracks[i].Genres = genres
+	}
+
+	return tracks, nil
 }
 
 func (r *TrackRepository) FindById(trackId int64) (*model.Track, error) {

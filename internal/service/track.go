@@ -32,8 +32,8 @@ func (s *TrackService) Create(track *model.Track) error {
 
 	return nil
 }
-func (s *TrackService) GetAll() ([]model.Track, error) {
-	return nil, nil
+func (s *TrackService) GetAll(filters *model.TrackFilter) ([]model.Track, error) {
+	return s.repository.FindAll(filters)
 }
 
 func (s *TrackService) GetById(id int64) (*model.Track, error) {
