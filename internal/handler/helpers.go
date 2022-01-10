@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/juicyluv/advanced-rest-server/internal/validator"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -129,7 +130,7 @@ func (h *Handler) readQueryCSV(qs url.Values, key string, defaultValue []string)
 	return strings.Split(csv, ",")
 }
 
-func (h *Handler) readQueryInt(qs url.Values, key string, defaultValue int) int {
+func (h *Handler) readQueryInt(qs url.Values, key string, defaultValue int, v *validator.Validator) int {
 	s := qs.Get(key)
 
 	if s == "" {
@@ -138,6 +139,7 @@ func (h *Handler) readQueryInt(qs url.Values, key string, defaultValue int) int 
 
 	i, err := strconv.Atoi(s)
 	if err != nil {
+		v.AddError(key, "must be an integer")
 		return defaultValue
 	}
 
