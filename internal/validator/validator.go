@@ -30,8 +30,8 @@ func (v *Validator) Valid() bool {
 	return len(v.Errors) == 0
 }
 
-// addError adds a new error to error map.
-func (v *Validator) addError(field, message string) {
+// AddError adds a new error to error map.
+func (v *Validator) AddError(field, message string) {
 	if _, exists := v.Errors[field]; !exists {
 		v.Errors[field] = message
 	}
@@ -40,7 +40,7 @@ func (v *Validator) addError(field, message string) {
 // Check adds a new error to the Errors map if condition is not equal to true.
 func (v *Validator) Check(condition bool, field, errorMessage string) {
 	if !condition {
-		v.addError(field, errorMessage)
+		v.AddError(field, errorMessage)
 	}
 }
 
@@ -59,6 +59,16 @@ func (v *Validator) UniqueStrings(values []string) bool {
 	}
 
 	return len(values) == len(unique)
+}
+
+// In returns true if a given value is in a list of strings.
+func (v *Validator) In(value string, list ...string) bool {
+	for i := range list {
+		if value == list[i] {
+			return true
+		}
+	}
+	return false
 }
 
 // MinLength checks whether given string has provided length.
