@@ -17,6 +17,14 @@ type Track struct {
 	Version  int     `json:"version"`
 }
 
+type TrackFilter struct {
+	Title    string
+	Year     int
+	Duration int
+	Genres   []string
+	Filters  Filters
+}
+
 type UpdateTrack struct {
 	Title    *string `json:"title"`
 	Year     *int32  `json:"year"`
